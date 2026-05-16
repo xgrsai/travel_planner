@@ -1,3 +1,7 @@
 from django.contrib import admin
 
-# Register your models here.
+from travel import models
+
+
+admin.site.register(models.TravelProject)
+admin.site.register(models.Place)
