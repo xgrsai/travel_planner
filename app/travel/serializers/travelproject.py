@@ -2,6 +2,8 @@ from rest_framework import serializers
 
 from ..models import TravelProject, Place
 
+from ..services.aic import fetch_artwork
+
 from .place import PlaceSerializer
 
 
@@ -21,7 +23,8 @@ class TravelProjectDetailSerializer(TravelProjectSerializer):
         places_data = validated_data.pop("places", [])
         project = TravelProject.objects.create(**validated_data)
         for place_data in places_data:
-            Place.objects.create(project=project, **place_data)
+            artwork = fetch_artwork(place_data["external_id"])
+            Place.objects.create(project=project, title=artwork["title"], **place_data)
         return project
 
     def update(self, instance, validated_data):
