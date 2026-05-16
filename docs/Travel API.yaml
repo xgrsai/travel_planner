@@ -9,23 +9,52 @@ servers:
     description: Local development server
 
 paths:
-  /api/projects/:
-    get:
-      operationId: projects_list
+  /api/auth/token/:
+    post:
+      operationId: auth_token_create
       tags:
-      - projects
+      - auth
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AuthToken'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AuthToken'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthToken'
+        required: true
       security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
+      - tokenAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/TravelProject'
+                $ref: '#/components/schemas/AuthToken'
+          description: ''
+  /api/projects/:
+    get:
+      operationId: projects_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - projects
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTravelProjectList'
           description: ''
     post:
       operationId: projects_create
@@ -44,9 +73,7 @@ paths:
               $ref: '#/components/schemas/TravelProjectDetail'
         required: true
       security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
+      - tokenAuth: []
       responses:
         '201':
           content:
@@ -67,9 +94,7 @@ paths:
       tags:
       - projects
       security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -101,9 +126,7 @@ paths:
               $ref: '#/components/schemas/TravelProjectDetail'
         required: true
       security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -134,9 +157,7 @@ paths:
             schema:
               $ref: '#/components/schemas/PatchedTravelProjectDetail'
       security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -156,9 +177,7 @@ paths:
       tags:
       - projects
       security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
+      - tokenAuth: []
       responses:
         '204':
           description: No response body
@@ -166,6 +185,12 @@ paths:
     get:
       operationId: projects_places_list
       parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
       - in: path
         name: project_pk
         schema:
@@ -174,17 +199,13 @@ paths:
       tags:
       - projects
       security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
+      - tokenAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Place'
+                $ref: '#/components/schemas/PaginatedPlaceList'
           description: ''
     post:
       operationId: projects_places_create
@@ -209,9 +230,7 @@ paths:
               $ref: '#/components/schemas/Place'
         required: true
       security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
+      - tokenAuth: []
       responses:
         '201':
           content:
@@ -236,9 +255,7 @@ paths:
       tags:
       - projects
       security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -274,9 +291,7 @@ paths:
               $ref: '#/components/schemas/Place'
         required: true
       security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -311,9 +326,7 @@ paths:
             schema:
               $ref: '#/components/schemas/PatchedPlace'
       security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -444,8 +457,7 @@ paths:
       tags:
       - schema
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - tokenAuth: []
       - {}
       responses:
         '200':
@@ -469,6 +481,68 @@ paths:
           description: ''
 components:
   schemas:
+    AuthToken:
+      type: object
+      properties:
+        username:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+        token:
+          type: string
+          readOnly: true
+      required:
+      - password
+      - token
+      - username
+    PaginatedPlaceList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Place'
+    PaginatedTravelProjectList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/TravelProject'
     PatchedPlace:
       type: object
       properties:
@@ -567,10 +641,8 @@ components:
       - id
       - name
   securitySchemes:
-    basicAuth:
-      type: http
-      scheme: basic
-    cookieAuth:
+    tokenAuth:
       type: apiKey
-      in: cookie
-      name: sessionid
+      in: header
+      name: Authorization
+      description: Token-based authentication with required prefix "Token"
