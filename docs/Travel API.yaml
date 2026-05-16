@@ -3,6 +3,8 @@ info:
   title: Travel API
   version: 1.0.0
   description: API for managing travel projects and places
+
+  
 paths:
   /api/projects/:
     get:
