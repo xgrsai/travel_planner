@@ -1,4 +1,3 @@
-```markdown
 # Travel API
 
 REST API for managing travel projects and places using the Art Institute of Chicago as a data source.
@@ -73,5 +72,4 @@ docker-compose exec app python manage.py createsuperuser
 
 ## Postman
 
-Import from docs `Travel API.yaml` from the project root into Postman to get a ready-made collection of all endpoints.
-```
+Import  `docs/Travel API.yaml` from the project root into Postman to get a ready-made collection of all endpoints.
