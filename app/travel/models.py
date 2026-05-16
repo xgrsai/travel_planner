@@ -15,6 +15,7 @@ class Place(models.Model):
     project = models.ForeignKey(
         TravelProject,
         on_delete=models.CASCADE,
+        related_name="places",
     )
     external_id = models.IntegerField()
     title = models.CharField(max_length=255, blank=True)

@@ -1,12 +1,22 @@
+from django.db import IntegrityError
+
 from rest_framework import viewsets, mixins, status
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
+
+from drf_spectacular.utils import extend_schema, OpenApiParameter
+from drf_spectacular.types import OpenApiTypes
 
 from ..models import Place, TravelProject
 from ..serializers.place import PlaceSerializer
 from ..services.aic import fetch_artwork
 
 
+@extend_schema(
+    parameters=[
+        OpenApiParameter("project_pk", OpenApiTypes.INT, OpenApiParameter.PATH),
+    ]
+)
 class PlaceViewSet(
     mixins.CreateModelMixin,
     mixins.UpdateModelMixin,
@@ -30,6 +40,10 @@ class PlaceViewSet(
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(project=project, title=artwork["title"])
+
+        try:
+            serializer.save(project=project, title=artwork["title"])
+        except IntegrityError:
+            raise ValidationError("This place already exists in the project.")
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
